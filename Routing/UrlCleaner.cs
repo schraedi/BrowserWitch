@@ -15,7 +15,7 @@ public static class UrlCleaner
             return url;
 
         url = StripTrackingParams(uri, config.Clean.StripParams);
-
+        url = ApplyRewriteRules(url, config);
         url = ApplySimplifyRules(url, config);
 
         return url;
@@ -47,6 +47,23 @@ public static class UrlCleaner
         return builder.Uri.AbsoluteUri;
     }
 
+    private static string ApplyRewriteRules(string url, BrowserWitchConfig config)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            return url;
+
+        foreach (var rule in config.Clean.Rewrite)
+        {
+            if (UrlRouter.GlobMatchesDomain(rule.Match, uri.Host))
+            {
+                var builder = new UriBuilder(uri) { Host = rule.Host };
+                return builder.Uri.AbsoluteUri;
+            }
+        }
+
+        return url;
+    }
+
     private static string ApplySimplifyRules(string url, BrowserWitchConfig config)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
@@ -62,13 +79,20 @@ public static class UrlCleaner
             var match = Regex.Match(pathAndQuery, rule.Pattern, RegexOptions.IgnoreCase);
             if (match.Success)
             {
-                var newPath = Regex.Replace(pathAndQuery, rule.Pattern, rule.Replace, RegexOptions.IgnoreCase);
-                var builder = new UriBuilder(uri)
+                var newPathAndQuery = Regex.Replace(pathAndQuery, rule.Pattern, rule.Replace, RegexOptions.IgnoreCase);
+                // Split on '?' so UriBuilder doesn't encode it as part of the path
+                var qIndex = newPathAndQuery.IndexOf('?');
+                var builder = new UriBuilder(uri) { Fragment = "" };
+                if (qIndex >= 0)
                 {
-                    Path = newPath,
-                    Query = "",
-                    Fragment = ""
-                };
+                    builder.Path = newPathAndQuery.Substring(0, qIndex);
+                    builder.Query = newPathAndQuery.Substring(qIndex + 1);
+                }
+                else
+                {
+                    builder.Path = newPathAndQuery;
+                    builder.Query = "";
+                }
                 return builder.Uri.AbsoluteUri;
             }
         }

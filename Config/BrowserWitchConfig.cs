@@ -3,6 +3,11 @@ namespace BrowserWitch.Config;
 public class BrowserWitchConfig
 {
     public string DefaultBrowser { get; set; } = "edge";
+    /// <summary>
+    /// "off" - never confirm, "unwrapped" - confirm only when resolve rules changed the URL, "always" - confirm every URL.
+    /// </summary>
+    public string Confirm { get; set; } = "off";
+    public List<BlacklistEntry> Blacklist { get; set; } = new();
     public List<ResolveRule> Resolve { get; set; } = new();
     public CleanConfig Clean { get; set; } = new();
     public List<RoutingRule> Rules { get; set; } = new();
@@ -13,6 +18,15 @@ public class CleanConfig
 {
     public List<string> StripParams { get; set; } = new();
     public List<SimplifyRule> Simplify { get; set; } = new();
+    public List<RewriteRule> Rewrite { get; set; } = new();
+}
+
+public class RewriteRule
+{
+    /// <summary>Domain glob pattern to match.</summary>
+    public string Match { get; set; } = "";
+    /// <summary>Replacement host.</summary>
+    public string Host { get; set; } = "";
 }
 
 public class SimplifyRule
@@ -46,6 +60,12 @@ public class RoutingRule
 {
     public string Match { get; set; } = "";
     public string Browser { get; set; } = "";
+}
+
+public class BlacklistEntry
+{
+    public string Match { get; set; } = "";
+    public string Category { get; set; } = "Blocked";
 }
 
 public class BrowserEntry

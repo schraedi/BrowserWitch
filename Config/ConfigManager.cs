@@ -58,6 +58,17 @@ public static class ConfigManager
         else if (config.Browsers.Count > 0)
             config.DefaultBrowser = config.Browsers.Keys.First();
 
+        // Blacklist known nuisance URLs
+        config.Blacklist = new List<BlacklistEntry>
+        {
+            new() { Match = "*.youtube.com/watch?v=dQw4w9WgXcQ", Category = "Rickroll" },
+            new() { Match = "youtu.be/dQw4w9WgXcQ", Category = "Rickroll" },
+            new() { Match = "goatse.*", Category = "Shock site" },
+            new() { Match = "lemonparty.*", Category = "Shock site" },
+            new() { Match = "tubgirl.*", Category = "Shock site" },
+            new() { Match = "meatspin.*", Category = "Shock site" }
+        };
+
         // Add default URL cleaning rules
         config.Clean = new CleanConfig
         {
@@ -80,6 +91,13 @@ public static class ConfigManager
                 // Misc
                 "ref_", "ref_src", "ref_url",
                 "_openstat", "yclid", "wickedid", "twclid"
+            },
+            Rewrite = new List<RewriteRule>
+            {
+                new() { Match = "x.com", Host = "xcancel.com" },
+                new() { Match = "*.x.com", Host = "xcancel.com" },
+                new() { Match = "twitter.com", Host = "xcancel.com" },
+                new() { Match = "*.twitter.com", Host = "xcancel.com" }
             },
             Simplify = new List<SimplifyRule>
             {

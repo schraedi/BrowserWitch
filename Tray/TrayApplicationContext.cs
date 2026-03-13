@@ -24,6 +24,18 @@ public class TrayApplicationContext : ApplicationContext
         contextMenu.Items.Add("Reload Config", null, OnReloadConfig);
         contextMenu.Items.Add(new ToolStripSeparator());
 
+        var confirmMenu = new ToolStripMenuItem("Confirm Navigation");
+        var currentConfirm = ConfigManager.Load().Confirm.ToLowerInvariant();
+        var confirmOff = new ToolStripMenuItem("Don't ask") { Tag = "off" };
+        var confirmUnwrapped = new ToolStripMenuItem("Unwrapped links only") { Tag = "unwrapped" };
+        var confirmAlways = new ToolStripMenuItem("Every link") { Tag = "always" };
+        confirmOff.Click += OnConfirmChanged;
+        confirmUnwrapped.Click += OnConfirmChanged;
+        confirmAlways.Click += OnConfirmChanged;
+        confirmMenu.DropDownItems.AddRange(new ToolStripItem[] { confirmOff, confirmUnwrapped, confirmAlways });
+        UpdateConfirmChecks(confirmMenu, currentConfirm);
+        contextMenu.Items.Add(confirmMenu);
+
         var startupItem = new ToolStripMenuItem("Start with Windows")
         {
             Checked = IsStartupEnabled(),
@@ -197,6 +209,35 @@ public class TrayApplicationContext : ApplicationContext
             _notifyIcon.ShowBalloonTip(3000, "BrowserWitch",
                 $"Config error: {ex.Message}",
                 ToolTipIcon.Error);
+        }
+    }
+
+    private void OnConfirmChanged(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item || item.Tag is not string value) return;
+
+        try
+        {
+            var config = ConfigManager.Load();
+            config.Confirm = value;
+            ConfigManager.Save(config);
+
+            // Update checkmarks
+            if (item.OwnerItem is ToolStripMenuItem parent)
+                UpdateConfirmChecks(parent, value);
+        }
+        catch (Exception ex)
+        {
+            _notifyIcon.ShowBalloonTip(3000, "BrowserWitch",
+                $"Error saving config: {ex.Message}", ToolTipIcon.Error);
+        }
+    }
+
+    private static void UpdateConfirmChecks(ToolStripMenuItem parent, string value)
+    {
+        foreach (ToolStripMenuItem child in parent.DropDownItems)
+        {
+            child.Checked = (child.Tag as string) == value;
         }
     }
 
