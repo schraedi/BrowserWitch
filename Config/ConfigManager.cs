@@ -104,8 +104,14 @@ public static class ConfigManager
                 new()
                 {
                     Match = "*.youtube.com",
-                    Pattern = @"/watch\?v=([a-zA-Z0-9_-]{11}).*",
+                    Pattern = @"/shorts/([a-zA-Z0-9_-]+).*",
                     Replace = "/watch?v=$1"
+                },
+                new()
+                {
+                    Match = "*.youtube.com",
+                    Pattern = @"/watch\?v=([a-zA-Z0-9_-]{11})(?:.*?(&t=[0-9]+s?))?.*",
+                    Replace = "/watch?v=$1$2"
                 },
                 new()
                 {
@@ -128,10 +134,13 @@ public static class ConfigManager
             new() { Match = "safelinks.protection.outlook.com", Method = "queryParam", Param = "url" },
             new() { Match = "*.safelinks.protection.outlook.com", Method = "queryParam", Param = "url" },
             new() { Match = "bit.ly", Method = "redirect" },
+            new() { Match = "bitly.com", Method = "redirect" },
+            new() { Match = "*.bitly.com", Method = "redirect" },
             new() { Match = "t.co", Method = "redirect" },
             new() { Match = "tinyurl.com", Method = "redirect" },
             new() { Match = "go.microsoft.com", Method = "redirect" },
-            new() { Match = "statics.teams.cdn.office.net", Method = "queryParam", Param = "url" }
+            new() { Match = "*.cdn.office.net", Method = "queryParam", Param = "url" },
+            new() { Match = "*.onecdn.static.microsoft", Method = "queryParam", Param = "url" }
         };
 
         // Add example rules
